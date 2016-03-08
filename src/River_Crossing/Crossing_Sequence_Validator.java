@@ -44,6 +44,10 @@ public class Crossing_Sequence_Validator {
     }
 
     public static void readInputFile(String fname) throws IOException {
+        /*
+         * Adds each string input line from file to
+         * local array list of inputs
+         */
         inputList = new ArrayList<>();
         FileReader reader = null;
         try {
@@ -67,18 +71,32 @@ public class Crossing_Sequence_Validator {
     }
 
     public static void validateInputs() {
-        System.out.println("in:" + inputList.size());
+
         for (String s : inputList) {
             ArrayList<Character> WestSide = new ArrayList<>(Arrays.asList('M', 'L', 'R', 'C'));
             ArrayList<Character> EastSide = new ArrayList<>();
             String moves = s;
             boolean west = true;
-            boolean deadMove;
+            /*
+             * Each string input in the list of inputs, are parsed into
+             * a set of characters representing a move.
+             */
             for (char move : moves.toCharArray()) {
+                /*
+                 * For both sides of the river -- whether which one is determined by
+                 * the value of the boolean variable "west" -- 'M' leaves the 
+                 * current side it's in and transfers to the other together
+                 * with the current parsed character unless the character is 'N'
+                 * meaning 'M' is bringing nothing with it.
+                 */
                 if (west) {
                     EastSide.add('M');
                     WestSide.remove(WestSide.indexOf('M'));
                     if (move != 'N') {
+                        /*
+                         * Not unless the character is in the same side as
+                         * 'M' it cannot cross the river on its own.
+                         */
                         if (WestSide.contains(move)) {
                             EastSide.add(move);
                             WestSide.remove(WestSide.indexOf(move));
@@ -100,13 +118,21 @@ public class Crossing_Sequence_Validator {
                     }
                     west = true;
                 }
-
-                deadMove = (checkStates(WestSide) || checkStates(EastSide));
+                /*
+                 * Checks if the currently made move is a dead move by checking 
+                 * if two characters that are left alone together in the same side of
+                 * the river have a prey-predator relationship.
+                 */
+                boolean deadMove = (checkStates(WestSide) || checkStates(EastSide));
 
                 if (deadMove) {
                     break;
                 }
             }
+            /*
+             * Unless all the characters, all together, are in the East Side of the
+             * river, an input string is considered no good.
+             */
             if (WestSide.isEmpty()) {
                 OkList.add(moves);
                 System.out.println(moves);
@@ -114,13 +140,18 @@ public class Crossing_Sequence_Validator {
         }
     }
 
+    /*
+     * Writes output values to output file. 
+     * Unless an input string is in the OK list, 
+     * it's outputted as no good ("NG");
+     */
     public static void writeOutputFile() {
         try {
             PrintWriter writer = new PrintWriter(inputFileName + ".out", "UTF-8");
             for (String s : inputList) {
                 if (OkList.contains(s)) {
                     writer.println("OK");
-                }else{
+                } else {
                     writer.println("NG");
                 }
             }
