@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,15 +23,14 @@ import java.util.logging.Logger;
 public class Crossing_Sequence_Validator {
 
     private static String inputFileName;
-    private static Queue<String> inputQueue;
     private static ArrayList<String> inputList;
-    private static ArrayList<String> outputList;
+    private static ArrayList<String> OkList;
 
     public static void main(String[] args) {
         System.out.println("Input file name: ");
         Scanner sc = new Scanner(System.in);
         inputFileName = sc.next();
-        outputList = new ArrayList<>();
+        OkList = new ArrayList<>();
 
         try {
             readInputFile(inputFileName);
@@ -41,13 +38,12 @@ public class Crossing_Sequence_Validator {
             System.out.println("Input file name: ");
             inputFileName = sc.next();
         }
-        
+
         validateInputs();
         writeOutputFile();
     }
 
     public static void readInputFile(String fname) throws IOException {
-        inputQueue = new LinkedList<>();
         inputList = new ArrayList<>();
         FileReader reader = null;
         try {
@@ -56,7 +52,6 @@ public class Crossing_Sequence_Validator {
             String line;
 
             while ((line = br.readLine()) != null) {
-                inputQueue.offer(line);
                 inputList.add(line);
             }
 
@@ -71,66 +66,63 @@ public class Crossing_Sequence_Validator {
         }
     }
 
-        public static void validateInputs() {
-            System.out.println("q:"+inputQueue.size());
-            System.out.println("in:"+inputList.size());
-//            while (!inputQueue.isEmpty()) {
-            for(String s : inputList){
-                ArrayList<Character> WestSide = new ArrayList<>(Arrays.asList('M', 'L', 'R', 'C'));
-                ArrayList<Character> EastSide = new ArrayList<>();
-//                String moves = inputQueue.poll();
-                String moves = s;
-                boolean west = true;
-                boolean deadMove;
-                for (char move : moves.toCharArray()) {
-                    if (west) {
-                        EastSide.add('M');
-                        WestSide.remove(WestSide.indexOf('M'));
-                        if (move != 'N') {
-                            if (WestSide.contains(move)) {
-                                EastSide.add(move);
-                                WestSide.remove(WestSide.indexOf(move));
-                            } else {
-                                outputList.add("NG");
-                                break;
-                            }
+    public static void validateInputs() {
+        System.out.println("in:" + inputList.size());
+        for (String s : inputList) {
+            ArrayList<Character> WestSide = new ArrayList<>(Arrays.asList('M', 'L', 'R', 'C'));
+            ArrayList<Character> EastSide = new ArrayList<>();
+            String moves = s;
+            boolean west = true;
+            boolean deadMove;
+            for (char move : moves.toCharArray()) {
+                if (west) {
+                    EastSide.add('M');
+                    WestSide.remove(WestSide.indexOf('M'));
+                    if (move != 'N') {
+                        if (WestSide.contains(move)) {
+                            EastSide.add(move);
+                            WestSide.remove(WestSide.indexOf(move));
+                        } else {
+                            break;
                         }
-                        west = false;
-                    } else {
-                        WestSide.add('M');
-                        EastSide.remove(EastSide.indexOf('M'));
-                        if (move != 'N') {
-                            if (EastSide.contains(move)) {
-                                WestSide.add(move);
-                                EastSide.remove(EastSide.indexOf(move));
-                            } else {
-                                outputList.add("NG");
-                                break;
-                            }
+                    }
+                    west = false;
+                } else {
+                    WestSide.add('M');
+                    EastSide.remove(EastSide.indexOf('M'));
+                    if (move != 'N') {
+                        if (EastSide.contains(move)) {
+                            WestSide.add(move);
+                            EastSide.remove(EastSide.indexOf(move));
+                        } else {
+                            break;
                         }
-                        west = true;
                     }
-                    
-                    deadMove = (checkStates(WestSide) || checkStates(EastSide));
-                    
-                    if (deadMove) {
-                        outputList.add("NG");
-                        break;
-                    }
+                    west = true;
                 }
-                if (WestSide.isEmpty()) {
-                    outputList.add("OK");
-                    System.out.println(moves);
+
+                deadMove = (checkStates(WestSide) || checkStates(EastSide));
+
+                if (deadMove) {
+                    break;
                 }
             }
-            System.out.println("ou:"+outputList.size());
+            if (WestSide.isEmpty()) {
+                OkList.add(moves);
+                System.out.println(moves);
+            }
         }
+    }
 
     public static void writeOutputFile() {
         try {
             PrintWriter writer = new PrintWriter(inputFileName + ".out", "UTF-8");
-            for (String s : outputList) {
-                writer.println(s);
+            for (String s : inputList) {
+                if (OkList.contains(s)) {
+                    writer.println("OK");
+                }else{
+                    writer.println("NG");
+                }
             }
             writer.close();
         } catch (IOException ex) {
